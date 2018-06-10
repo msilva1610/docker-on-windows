@@ -112,3 +112,30 @@ Executando o container no modo normal
 ```
 docker container run -d -P --name log-watcher dockeronwindows/ch03-iislog-watcher
 ```
+
+O comando acima deu erro. O sistema não estava construindo a imagem e utilizando como normalmente. então, executei:
+```
+docker build -t  dockeronwindows/ch03-iislog-watcher .
+```
+
+Depois do docker build acima. Executei novamente:
+```
+docker container run -d -P --name log-watcher dockeronwindows/ch03-iislog-watcher
+``` 
+
+Container criado com sucesso.
+
+A log do IIS armazena em memória as requisições e derraga as linhas no arquivo quando atinge 64k. Para não ficar esperando a solução é executar o comando abaiaco em outra janela.
+
+```
+docker container exec log-watcher netsh http flush logbuffer
+```
+
+Depois verificar novamente as log com o comando:
+```
+docker container logs -f log-watcher
+```
+
+
+
+# Capitulo CH03 - 
