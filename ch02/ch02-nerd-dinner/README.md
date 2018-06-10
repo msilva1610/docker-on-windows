@@ -4,6 +4,8 @@
 
 Diferente do conceito tradicional de uma aplicação APS.NET, no docker devemos rodar uma aplicação por caontainer. Por isso é mantido apenas um application pool por aplicação. Os demais sites e appplication pool são removidos.
 
+O comando docker run está sendo executdo lendo sempre um dockerfile para fazer o build da imagem e subir um container a partir dessa imagem. Cada pasta de exemplo possui seu dockerfile para fazer o build da imagem. 
+
 ## Dockerfile em analise
 ```
 # escape=`
@@ -38,11 +40,41 @@ COPY --from=builder C:\out\NerdDinner\_PublishedWebsites\NerdDinner C:\nerd-dinn
 ```
 
 ## Destravar o web.config
-Por padrão o IIS trava o acesso ao web.config. Não entendi ainda a razão. Para destravar, no exemplo do nerd-dinner, usa-se a instrução abaixo no:
+O padrão o web.config são modificados para ajustar a aplicação. A seção system.webserver no web.config fica travada por default. Para destravar usa-se a instrução abaixo dentro do dockerfile.
 
 ```
 RUN & c:\windows\system32\inetsrv\appcmd.exe `
       unlock config `
       /section:system.webServer/handlers
 ```
+
+## Docker run em execução com suporte do Dockerfile
+
+```
+docker container run -d -P dockeronwindows/ch02-nerd-dinner
+
+```
+
+Para executar a execução do Container ativos, digite:
+```
+docker container ls
+```
+
+Para avaliar as configurações de um container, digite:
+```
+docker container inspect <id> ou <container-name> 
+```
+
+Para popupar tempo procurando a infoirmação desejada é mais fácil filtrar no json a campo desejado. Exemplo para encontrar um IP:
+
+```
+docker container inspect --format '{{.NetworkSettings.Networks.nat.IPAddress }}' demo
+```
+
+Para verificar o que manter o entrypoint do container:
+
+```
+docker container inspect --format '{{.Config.Entrypoint}}' <conatiner-name ou container-id>
+```
+
 
