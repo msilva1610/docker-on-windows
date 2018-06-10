@@ -7,9 +7,9 @@ Diferente do conceito tradicional de uma aplicação APS.NET, no docker devemos 
 # Destravar o web.config
 Por padrão o IIS trava o acesso ao web.config. Não entendi ainda a razão. Para destravar, no exemplo do nerd-dinner, usa-se a instrução abaixo no:
 
-´´´
+```
 RUN & c:\windows\system32\inetsrv\appcmd.exe `
       unlock config `
       /section:system.webServer/handlers
-´´´
+```
 
