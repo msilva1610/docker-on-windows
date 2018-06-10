@@ -71,10 +71,44 @@ Para popupar tempo procurando a infoirmação desejada é mais fácil filtrar no
 docker container inspect --format '{{.NetworkSettings.Networks.nat.IPAddress }}' demo
 ```
 
-Para verificar o que manter o entrypoint do container:
+Para verificar o que mantem o entrypoint do container:
 
 ```
 docker container inspect --format '{{.Config.Entrypoint}}' <conatiner-name ou container-id>
 ```
 
+# Capitulo 3 - Movendo uma aplicação asp.net para container
 
+## Alterando a forma como  o IIS grava as logs
+
+## Dockerfile em analise
+```
+# escape=`
+FROM microsoft/iis:windowsservercore
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# configure IIS to write a global log file:
+RUN Set-WebConfigurationProperty -p 'MACHINE/WEBROOT/APPHOST' -fi 'system.applicationHost/log' -n 'centralLogFileMode' -v 'CentralW3C'; `
+    Set-WebConfigurationProperty -p 'MACHINE/WEBROOT/APPHOST' -fi 'system.applicationHost/log/centralW3CLogFile' -n 'truncateSize' -v 4294967295; `
+    Set-WebConfigurationProperty -p 'MACHINE/WEBROOT/APPHOST' -fi 'system.applicationHost/log/centralW3CLogFile' -n 'period' -v 'MaxSize'; `
+    Set-WebConfigurationProperty -p 'MACHINE/WEBROOT/APPHOST' -fi 'system.applicationHost/log/centralW3CLogFile' -n 'directory' -v 'c:\iislog'
+
+ENTRYPOINT ["powershell"]
+CMD Start-Service W3SVC; `
+    Invoke-WebRequest http://localhost -UseBasicParsing | Out-Null; `
+    netsh http flush logbuffer | Out-Null; `
+    Get-Content -path 'c:\iislog\W3SVC\u_extend1.log' -Tail 1 -Wait 
+```
+
+O ultimo CMD acima possui 4 instruções:
+
+1. Inicia o serviço do IIS (W3SVC)
+2. Faz a primeira requisição HTTP para iniciar o arquivo de log
+3. Faz um flush na log permitindo que o powershell escute a saída e mantém a escrita padrão no disco
+4. Ler o conteúdo de cada entrada na log com Tail mode e exibe na console
+
+Executando o container no modo normal
+
+```
+docker container run -d -P --name log-watcher dockeronwindows/ch03-iislog-watcher
+```
