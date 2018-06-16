@@ -31,6 +31,8 @@ No powershell, digite o comando:
 ```
 docker --register-service
 ```
+depois
+```
 start-service docker
 ```
 
